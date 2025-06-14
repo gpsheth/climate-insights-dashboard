@@ -2,11 +2,10 @@ import React from 'react';
 import Plot from 'react-plotly.js';
 
 function BarChart({ times, temps }) {
-  // Group temps by date
   const dailyTemps = {};
 
   times.forEach((time, index) => {
-    const date = time.split('T')[0];  // '2020-01-01T00:00' → '2020-01-01'
+    const date = time.split('T')[0];
     if (!dailyTemps[date]) dailyTemps[date] = [];
     dailyTemps[date].push(temps[index]);
   });
