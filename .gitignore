@@ -1,5 +1,6 @@
 /frontend/node_modules
 
 /backend/my-backend
+/backend/__pycache__
 
 .env
