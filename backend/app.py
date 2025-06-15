@@ -94,7 +94,9 @@ def handle_weather_request():
     location = data['location']
     start_date = data['startDate']
     end_date = data['endDate']
-    hourly = data['hourly']
+    hourlyVars = data['hourlyVars']
+
+    hourly = ','.join(hourlyVars)
 
     cached = check_cache(location, start_date, end_date, hourly)
     if cached:
