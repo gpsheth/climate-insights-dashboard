@@ -2,5 +2,6 @@
 
 /backend/my-backend
 /backend/__pycache__
+/backend/services/__pycache__*
 
 .env

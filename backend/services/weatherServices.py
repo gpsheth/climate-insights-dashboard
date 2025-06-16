@@ -35,13 +35,12 @@ def fetch_weather_data(location, start_date, end_date, hourly_vars, selected_cha
         processed_data = process_charts(weather_data, selected_charts)
 
         save_to_cache(location, start_date, end_date, weather_data, hourly)
-        return weather_data
+        return processed_data
     except requests.exceptions.RequestException as e:
         print(f"Weather API error: {e}")
         return {"error": "Failed to fetch weather data"}
 
 def process_charts(weather_data, selected_charts):
-    """Process data for selected chart types"""
     if 'error' in weather_data or 'hourly' not in weather_data:
         return weather_data
     

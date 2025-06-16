@@ -86,7 +86,7 @@ function App() {
         const processedData = await res.json();
         setYearlyAverages([]);
         setScatterData([]);
-    
+        
         if (processedData.yearly_averages) {
             setYearlyAverages(processedData.yearly_averages);
         }
