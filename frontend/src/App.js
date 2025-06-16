@@ -77,7 +77,7 @@ function App() {
             }
         }
 
-        const res = await fetch('http://localhost:5000/weather', {
+        const res = await fetch('http://10.220.4.157:5000/weather', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ location, startDate, endDate, hourlyVars, selectedCharts }),

@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/climate-insights-dashboard/static/css/main.e6c13ad2.css",
+    "main.js": "/climate-insights-dashboard/static/js/main.270a2445.js",
+    "static/js/453.8ab44547.chunk.js": "/climate-insights-dashboard/static/js/453.8ab44547.chunk.js",
+    "index.html": "/climate-insights-dashboard/index.html",
+    "main.e6c13ad2.css.map": "/climate-insights-dashboard/static/css/main.e6c13ad2.css.map",
+    "main.270a2445.js.map": "/climate-insights-dashboard/static/js/main.270a2445.js.map",
+    "453.8ab44547.chunk.js.map": "/climate-insights-dashboard/static/js/453.8ab44547.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.e6c13ad2.css",
+    "static/js/main.270a2445.js"
+  ]
+}
