@@ -1,14 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import Plot from 'react-plotly.js';
+import React, { useState } from 'react';
+import YearlyTemperatureChart from './components/YearlyTemperatureChart';
+import TemperatureRainScatter from './components/TemperatureRainScatter';
+import ChartSelector from './components/ChartSelector';
 
 function App() {
     const [location, setLocation] = useState('');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
     const [selectedCharts, setSelectedCharts] = useState([]);
-    const [weatherData, setWeatherData] = useState(null);
     const [yearlyAverages, setYearlyAverages] = useState([]);
     const [scatterData, setScatterData] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
 
     const availableCharts = [
         'Yearly Average Temperature Comparison',
@@ -29,38 +31,9 @@ function App() {
         }
     };
 
-    const calculateYearlyAverages = (hourlyData) => {
-        const { time, temperature_2m } = hourlyData;
-        const averages = {};
-
-        time.forEach((timestamp, index) => {
-        const year = new Date(timestamp).getFullYear();
-        if (!averages[year]) {
-            averages[year] = { sum: 0, count: 0 };
-        }
-        averages[year].sum += temperature_2m[index];
-        averages[year].count++;
-        });
-
-        return Object.entries(averages).map(([year, data]) => ({
-            year: parseInt(year),
-            temperature: data.sum / data.count,
-        })).sort((a, b) => a.year - b.year);
-    };
-
-    useEffect(() => {
-        if (weatherData && weatherData.hourly) {
-            const { temperature_2m, precipitation } = weatherData.hourly;
-            const points = temperature_2m.map((temp, index) => ({
-                temperature: temp,
-                precipitation: precipitation[index]
-            }));
-            setScatterData(points);
-        }
-    }, [weatherData]);
-
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setIsLoading(true);
 
         let hourlyVars = [];
 
@@ -107,15 +80,21 @@ function App() {
         const res = await fetch('http://localhost:5000/weather', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ location, startDate, endDate, hourlyVars }),
+            body: JSON.stringify({ location, startDate, endDate, hourlyVars, selectedCharts }),
         });
 
-        const json = await res.json();
-        setWeatherData(json);
+        const processedData = await res.json();
+        setYearlyAverages([]);
+        setScatterData([]);
     
-        if (json.hourly) {
-            setYearlyAverages(calculateYearlyAverages(json.hourly));
+        if (processedData.yearly_averages) {
+            setYearlyAverages(processedData.yearly_averages);
         }
+        
+        if (processedData.temp_rain_correlation) {
+            setScatterData(processedData.temp_rain_correlation);
+        }
+        setIsLoading(false);
     };
 
     return (
@@ -142,92 +121,23 @@ function App() {
                     onChange={(e) => setEndDate(e.target.value)}
                 />
                 <br /><br />
-                <label>Charts:</label>
-                <div>
-                    {availableCharts.map((chartName) => (
-                        <div key={chartName}>
-                            <input
-                                type="checkbox"
-                                id={chartName}
-                                name="charts"
-                                value={chartName}
-                                checked={selectedCharts.includes(chartName)}
-                                onChange={handleChartChange}
-                            />
-                            <label htmlFor={chartName}>{chartName}</label>
-                        </div>
-                    ))}
-                </div>
+                <ChartSelector 
+                    availableCharts={availableCharts}
+                    selectedCharts={selectedCharts}
+                    handleChartChange={handleChartChange}
+                />
                 <br /><br />
                 <button type="submit">Submit</button>
             </form>
 
-            {selectedCharts.includes('Yearly Average Temperature Comparison') && yearlyAverages.length > 0 && (
-                <div>
-                <h3>Yearly Average Temperature Comparison</h3>
-                <Plot
-                    data={[
-                    {
-                        x: yearlyAverages.map(item => item.year),
-                        y: yearlyAverages.map(item => item.temperature),
-                        type: 'bar',
-                        marker: { color: '#1f77b4' },
-                        text: yearlyAverages.map(item => `${item.temperature.toFixed(1)}°C`),
-                        hoverinfo: 'text',
-                    }
-                    ]}
-                    layout={{
-                        title: 'Yearly Average Temperature',
-                        xaxis: { title: 'Year', tickmode: 'linear' },
-                        yaxis: { title: 'Temperature (°C)' },
-                        hovermode: 'closest',
-                        showlegend: false,
-                    }}
-                    style={{ width: '100%', height: '400px' }}
-                />
-                </div>
+            {isLoading && <p>Loading data...</p>}
+
+            {selectedCharts.includes('Yearly Average Temperature Comparison') && (
+                <YearlyTemperatureChart yearlyAverages={yearlyAverages} />
             )}
 
-            {selectedCharts.includes('Hourly Temperature and Rain Correlation') && 
-            scatterData.length > 0 && (
-                <div>
-                <h3>Hourly Temperature and Rain Correlation</h3>
-                <Plot
-                    data={[
-                    {
-                        x: scatterData.map(point => point.temperature),
-                        y: scatterData.map(point => point.precipitation),
-                        type: 'scatter',
-                        mode: 'markers',
-                        marker: {
-                            size: 4,
-                            opacity: 0.5,
-                            color: '#636efa'
-                        }
-                    }
-                    ]}
-                    layout={{
-                        title: 'Temperature vs Precipitation',
-                        xaxis: { 
-                            title: 'Temperature (°C)',
-                            gridcolor: '#f0f0f0'
-                        },
-                        yaxis: { 
-                            title: 'Precipitation (mm)',
-                            gridcolor: '#f0f0f0'
-                        },
-                        hovermode: 'closest',
-                        showlegend: false,
-                        plot_bgcolor: '#f9f9f9',
-                        paper_bgcolor: '#f9f9f9',
-                    }}
-                    config={{ responsive: true }}
-                    style={{ width: '100%', height: '500px' }}
-                />
-                <div style={{ marginTop: '10px', fontStyle: 'italic' }}>
-                    Each point represents an hourly measurement showing the relationship between temperature and precipitation
-                </div>
-                </div>
+            {selectedCharts.includes('Hourly Temperature and Rain Correlation') && (
+                <TemperatureRainScatter scatterData={scatterData} />
             )}
         </div>
     );
