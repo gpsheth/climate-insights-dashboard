@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from services.dbServices import init_db, get_cached_data
 from services.weatherServices import fetch_weather_data
+import os
 
 app = Flask(__name__)
 CORS(app)
